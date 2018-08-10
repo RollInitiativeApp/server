@@ -59,11 +59,11 @@ describe("User", () => {
         expect(user.NameFirst).to.equal("Test");
 
         let lastSaved = user.LastModified;
-        // await user.save();
+        await UserNodeHelper.saveUser(user);
 
         let newUser = await UserNodeHelper.findByUsername("test");
         let newSaved = newUser.LastModified;
 
-        expect(lastSaved).to.not.eq(newSaved);
+        expect(lastSaved).to.not.eq(newSaved, "Saved times are the same");
     });
 });

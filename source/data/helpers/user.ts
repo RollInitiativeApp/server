@@ -4,7 +4,10 @@ import { DateTime } from "luxon";
 import { User, Character } from "@roll4init/objects";
 
 import { connection } from "../connection";
-import { Remapper } from "../remapper";
+import { SimpleDataDeserializer } from "../serializers/SimpleDataDeserializer";
+import { SimpleDataSerializer } from "../serializers/SimpleDataSerializer";
+
+import { inspect } from "util";
 
 export class UserNotFoundError extends Error {}
 
@@ -19,7 +22,7 @@ export class UserNodeHelper {
 
         return r.records
             .map(rec => rec.get(0) as Node)
-            .map(node => Remapper.map<User>(new User(), node))
+            .map(node => SimpleDataDeserializer.deserialize(new User(), node))
             .shift();
     }
 
@@ -36,7 +39,7 @@ export class UserNodeHelper {
 
             return r.records
                 .map(rec => rec.get(0) as Node)
-                .map(node => Remapper.map<User>(new User(), node))
+                .map(node => SimpleDataDeserializer.deserialize(new User(), node))
                 .shift();
         } catch (e) {
             throw new Error("Failed to get user: " + e);
@@ -46,8 +49,7 @@ export class UserNodeHelper {
     }
 
     static async findByDiscord(discord: string): Promise<User> {
-        let match =
-            "MATCH (u:User) WHERE u.DiscordId = {discord} RETURN count(*)";
+        let match = "MATCH (u:User) WHERE u.DiscordId = {discord} RETURN count(*)";
         let session = connection.session();
 
         try {
@@ -61,11 +63,10 @@ export class UserNodeHelper {
                     discord: discord
                 });
 
-                let records: User[] = r.records
+                return r.records
                     .map(rec => rec.get(0) as Node)
-                    .map(node => Remapper.map<User>(new User(), node));
-
-                return records[0];
+                    .map(node => SimpleDataDeserializer.deserialize(new User(), node))
+                    .shift();
             } else {
                 throw new UserNotFoundError();
             }
@@ -83,9 +84,7 @@ export class UserNodeHelper {
 
             let characters: Character[] = result.records
                 .map(rec => rec.get(0))
-                .map((rec: Node) =>
-                    Remapper.map<Character>(new Character(), rec)
-                );
+                .map((rec: Node) => SimpleDataDeserializer.deserialize(new Character(), rec));
             session.close();
 
             return characters;
@@ -95,6 +94,19 @@ export class UserNodeHelper {
     }
 
     static async saveUser(user: User): Promise<boolean> {
+        let props = SimpleDataSerializer.serialize(user);
+        props.LastModified = DateTime.utc().toISO();
+        let reformatted = inspect(props);
+
+        let query = `MATCH (u:User { Unique: {unique}}) SET u += {data} RETURN u`;
+        let session = connection.session();
+
+        let trans = session.beginTransaction();
+        trans.run(query, { unique: user.Unique, data: props });
+        let result = await trans.commit();
+
+        if (result.summary.counters.propertiesSet() > 0) return true;
+
         return false;
     }
 }

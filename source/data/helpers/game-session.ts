@@ -8,7 +8,7 @@ import {
 // Local imports
 import { User, GameSession, GameCharacter } from "@roll4init/objects";
 import { connection } from "../connection";
-import { Remapper } from "../remapper";
+import { SimpleDataDeserializer } from "../serializers/SimpleDataDeserializer";
 
 interface GameCharacterRelationship {
     initiative: number;
@@ -44,7 +44,9 @@ export class GameSessionNodeHelper {
         session.close();
         return r.records
             .map(rec => rec.get(0) as Node)
-            .map((node: Node) => Remapper.map(new GameSession(), node))
+            .map((node: Node) =>
+                SimpleDataDeserializer.deserialize(new GameSession(), node)
+            )
             .shift();
     }
 
@@ -67,11 +69,11 @@ export class GameSessionNodeHelper {
         let characterNode: Node = r.get(0);
         let relation: Relationship = r.get(1);
 
-        let gc: GameCharacter = Remapper.map(
+        let gc: GameCharacter = SimpleDataDeserializer.deserialize(
             new GameCharacter(),
             characterNode
         );
-        let gcrel: GameCharacterRelationship = Remapper.mapRelationship<
+        let gcrel: GameCharacterRelationship = SimpleDataDeserializer.mapRelationship<
             GameCharacterRelationship
         >({ initiative: 0 }, relation);
 
@@ -90,7 +92,7 @@ export class GameSessionNodeHelper {
         let masters: User[] = r.records
             .map((r: Record) => r.get(0))
             .map((n: Node) => {
-                return Remapper.map(new User(), n);
+                return SimpleDataDeserializer.deserialize(new User(), n);
             });
 
         session.close();

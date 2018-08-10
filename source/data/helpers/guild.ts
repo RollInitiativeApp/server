@@ -1,6 +1,6 @@
 import { connection } from "../connection";
 import { StatementResult, Node } from "neo4j-driver/types/v1";
-import { Remapper } from "../remapper";
+import { SimpleDataDeserializer } from "../serializers/SimpleDataDeserializer";
 import { Guild } from "@roll4init/objects";
 
 /**tsc
@@ -19,7 +19,9 @@ export class GuildNodeHelper {
         session.close();
         return r.records
             .map(rec => rec.get(0) as Node)
-            .map(node => Remapper.map<Guild>(new Guild(), node))
+            .map(node =>
+                SimpleDataDeserializer.deserialize<Guild>(new Guild(), node)
+            )
             .shift();
     }
 }

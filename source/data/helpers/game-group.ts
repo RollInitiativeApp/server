@@ -1,7 +1,7 @@
 import { Group, User, Guild } from "@roll4init/objects";
 import { connection } from "../connection";
 import { StatementResult, Node } from "neo4j-driver/types/v1";
-import { Remapper } from "../remapper";
+import { SimpleDataDeserializer } from "../serializers/SimpleDataDeserializer";
 
 /**
  * A group represents a group of players and dungeon masters.
@@ -18,7 +18,9 @@ export class GroupNodeHelper {
 
         return r.records
             .map(rec => rec.get(0) as Node)
-            .map(node => Remapper.map<User>(new User(), node));
+            .map(node =>
+                SimpleDataDeserializer.deserialize<User>(new User(), node)
+            );
     }
 
     static async findByGuild(guild: Guild): Promise<Group[]> {
@@ -31,6 +33,8 @@ export class GroupNodeHelper {
 
         return r.records
             .map(rec => rec.get(0) as Node)
-            .map(node => Remapper.map<Group>(new Group(), node));
+            .map(node =>
+                SimpleDataDeserializer.deserialize<Group>(new Group(), node)
+            );
     }
 }

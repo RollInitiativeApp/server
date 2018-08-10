@@ -1,7 +1,7 @@
 import { Character, User } from "@roll4init/objects";
 import { DateTime } from "luxon";
 import { StatementResult, Node } from "neo4j-driver/types/v1";
-import { Remapper } from "../remapper";
+import { SimpleDataDeserializer } from "../serializers/SimpleDataDeserializer";
 import { connection } from "../connection";
 import { UserNodeHelper, UserNotFoundError } from "./User";
 
@@ -20,7 +20,10 @@ export class CharacterNodeHelper {
             return result.records
                 .map(rec => rec.get(0))
                 .map((rec: Node) =>
-                    Remapper.map<Character>(new Character(), rec)
+                    SimpleDataDeserializer.deserialize<Character>(
+                        new Character(),
+                        rec
+                    )
                 )
                 .shift();
         } catch (e) {
@@ -41,7 +44,9 @@ export class CharacterNodeHelper {
 
             return result.records
                 .map(rec => rec.get(0))
-                .map((rec: Node) => Remapper.map<User>(new User(), rec))
+                .map((rec: Node) =>
+                    SimpleDataDeserializer.deserialize<User>(new User(), rec)
+                )
                 .shift();
         } catch (e) {
             throw new UserNotFoundError(e);
