@@ -2,7 +2,7 @@ import { v1 as neo4j } from "neo4j-driver";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-let driver = neo4j.driver(
+let connection = neo4j.driver(
 	process.env.DB_HOST || "bolt://localhost:7687",
 	neo4j.auth.basic(
 		process.env.DB_USER || "neo4j",
@@ -10,4 +10,4 @@ let driver = neo4j.driver(
 	)
 );
 
-export default driver;
+export { connection };
