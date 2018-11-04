@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy as DiscordStrategy } from "passport-discord";
 import { Request, Response } from "express";
 import { UserNodeHelper, UserNotFoundError } from "./data/helpers/User";
-import { User } from "@roll4init/common";
+import { User } from "@roll4init/objects";
 
 export class Auth {
     initialize() {
@@ -29,9 +29,7 @@ export class Auth {
     }
 
     deserializer(serialized: any, done: Function) {
-        UserNodeHelper.findByDiscord(serialized.id).then(user =>
-            done(null, user)
-        );
+        UserNodeHelper.findByDiscord(serialized.id).then(user => done(null, user));
     }
 
     authenticated(req: Request, res: Response, next: Function) {

@@ -3,16 +3,12 @@ import { join } from "path";
 
 import auth from "../auth";
 import { clientPath } from "../paths";
-import { User } from "@roll4init/common";
+import { User } from "@roll4init/objects";
 
 export default class UserRouteHandler {
     static get router(): core.Router {
         let router = Router();
-        router.all(
-            "/dashboard",
-            auth.authenticated,
-            UserRouteHandler.dashboard
-        );
+        router.all("/dashboard", auth.authenticated, UserRouteHandler.dashboard);
         return router;
     }
 

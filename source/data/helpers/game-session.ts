@@ -1,9 +1,4 @@
-import {
-    Node,
-    StatementResult,
-    Relationship,
-    Record
-} from "neo4j-driver/types/v1";
+import { Node, StatementResult, Relationship, Record } from "neo4j-driver/types/v1";
 
 // Local imports
 import { User, GameSession, GameCharacter } from "@roll4init/objects";
@@ -15,10 +10,7 @@ interface GameCharacterRelationship {
 }
 
 export class GameSessionNodeHelper {
-    static async hasCharacter(
-        game: GameSession,
-        character: GameCharacter
-    ): Promise<boolean> {
+    static async hasCharacter(game: GameSession, character: GameCharacter): Promise<boolean> {
         let query = `MATCH (c:Character)-[:InSession]-(gs:GameSession)
 			WHERE c.Unique = {cUnique} AND gs.Unique = {gsUnique}
 			RETURN COUNT(c);`;
@@ -29,7 +21,6 @@ export class GameSessionNodeHelper {
             gsUnique: game.Unique
         });
 
-        console.log(r);
         return false;
     }
 
@@ -44,9 +35,7 @@ export class GameSessionNodeHelper {
         session.close();
         return r.records
             .map(rec => rec.get(0) as Node)
-            .map((node: Node) =>
-                SimpleDataDeserializer.deserialize(new GameSession(), node)
-            )
+            .map((node: Node) => SimpleDataDeserializer.deserialize(new GameSession(), node))
             .shift();
     }
 
@@ -60,9 +49,7 @@ export class GameSessionNodeHelper {
         });
 
         session.close();
-        return r.records.map((r: Record) =>
-            GameSessionNodeHelper.remapGameCharacter(r)
-        );
+        return r.records.map((r: Record) => GameSessionNodeHelper.remapGameCharacter(r));
     }
 
     static remapGameCharacter(r: Record): GameCharacter {
@@ -89,11 +76,9 @@ export class GameSessionNodeHelper {
             hash: game.Unique
         });
 
-        let masters: User[] = r.records
-            .map((r: Record) => r.get(0))
-            .map((n: Node) => {
-                return SimpleDataDeserializer.deserialize(new User(), n);
-            });
+        let masters: User[] = r.records.map((r: Record) => r.get(0)).map((n: Node) => {
+            return SimpleDataDeserializer.deserialize(new User(), n);
+        });
 
         session.close();
         return masters;

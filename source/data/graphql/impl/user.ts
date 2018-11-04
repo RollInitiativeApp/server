@@ -1,6 +1,6 @@
 import { readFile } from "fs-extra";
 import { join } from "path";
-import { User } from "@roll4init/common";
+import { User } from "@roll4init/objects";
 import { UserNodeHelper } from "../../helpers/User";
 
 // load user.graphql

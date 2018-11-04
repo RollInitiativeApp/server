@@ -7,17 +7,15 @@ import { connection } from "../connection";
 import { SimpleDataDeserializer } from "../serializers/SimpleDataDeserializer";
 import { SimpleDataSerializer } from "../serializers/SimpleDataSerializer";
 
-import { inspect } from "util";
-
 export class UserNotFoundError extends Error {}
 
 export class UserNodeHelper {
     static async findByUsername(username: string): Promise<User> {
-        let query = `MATCH (u:User) WHERE u.Username = {username} RETURN u`;
+        let query = `MATCH (u:User { Username: {uname}}) RETURN u`;
         let session = connection.session();
 
         let r: StatementResult = await session.run(query, {
-            username: username
+            uname: username
         });
 
         return r.records
@@ -96,7 +94,6 @@ export class UserNodeHelper {
     static async saveUser(user: User): Promise<boolean> {
         let props = SimpleDataSerializer.serialize(user);
         props.LastModified = DateTime.utc().toISO();
-        let reformatted = inspect(props);
 
         let query = `MATCH (u:User { Unique: {unique}}) SET u += {data} RETURN u`;
         let session = connection.session();
